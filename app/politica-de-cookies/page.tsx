@@ -1,0 +1,2 @@
+import { PolicyPage } from "@/components/ui/PolicyPage";
+export default function Page(){return <PolicyPage eyebrow="Legal / Navegación" title="Cookies" intro="Tecnología mínima y clara." sections={[{title:"Uso actual",body:"La beta utiliza almacenamiento local para conservar tu carrito y registrar voluntariamente tu suscripción al drop. No integra una plataforma publicitaria propia."},{title:"Control",body:"Puedes borrar estos datos desde la configuración de privacidad o almacenamiento de tu navegador."}]}/>}

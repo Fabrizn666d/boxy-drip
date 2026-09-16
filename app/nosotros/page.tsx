@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+export const metadata: Metadata = { title:"Nosotros | Boxy Drip", description:"Boxy Drip, cultura streetwear desde Ica, Perú." };
+export default function NosotrosPage(){return <main className="editorial-page"><header className="page-hero"><span>The brand / Ica</span><h1>Nosotros</h1><p>Lo mejor<br /><em>de la calle.</em></p></header><section className="about-editorial"><div><Image src="/models/hero-emotion-campaign-v1.png" alt="Boxy Drip street culture" fill sizes="50vw"/></div><article><span>Ica · Perú</span><h2>No seguimos la calle.<br/><em>Somos parte de ella.</em></h2><p>Boxy Drip nace con una idea simple: crear una selección streetwear con presencia real. Trabajamos en drops limitados para mantener cada lanzamiento directo, reconocible y difícil de repetir.</p><ul><li>Drop culture</li><li>Streetwear</li><li>Limited pieces</li><li>Ica / Perú</li></ul></article></section></main>}

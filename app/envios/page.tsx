@@ -1,0 +1,3 @@
+import { PolicyPage } from "@/components/ui/PolicyPage";
+import { policies } from "@/data/site";
+export default function Page(){return <PolicyPage eyebrow="Ayuda / Pedidos" title="Envíos" intro="Cómo llega tu pedido." sections={[{title:"Cobertura",body:policies.shipping},{title:"Coordinación",body:"Luego de enviar tu pedido por WhatsApp, confirmaremos contigo la dirección, el horario y el costo de entrega antes de procesar el pago."},{title:"Seguimiento",body:"La versión beta coordina cada entrega directamente por WhatsApp. Conserva la conversación para consultar el estado de tu pedido."}]}/>}
