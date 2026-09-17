@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Inter_Tight, Permanent_Marker } from "next/font/google";
+import { Barlow_Condensed, Inter_Tight } from "next/font/google";
 import { StoreProvider } from "@/components/providers/StoreProvider";
 import { Header } from "@/components/sections/Header";
 import { Footer } from "@/components/sections/Footer";
@@ -20,13 +20,8 @@ const uiFont = Inter_Tight({
   variable: "--font-ui",
 });
 
-const brushFont = Permanent_Marker({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-brush",
-});
-
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "Boxy Drip — Lo mejor de la calle",
   description: "Streetwear premium, drops limitados y actitud urbana en Ica.",
   openGraph: { title: "Boxy Drip — Lo mejor de la calle", description: "Streetwear, piezas limitadas y Drop 006 desde Ica.", type: "website", locale: "es_PE" },
@@ -34,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${displayFont.variable} ${uiFont.variable} ${brushFont.variable}`}>
+    <html lang="es" className={`${displayFont.variable} ${uiFont.variable}`}>
       <body>
         <StoreProvider>
           <MotionSystem />

@@ -1,26 +1,35 @@
-import { ArrowUpRight, Clock3, MapPin, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Crown, Headphones, MapPin, MessageCircle, Navigation } from "lucide-react";
 import { SITE_CONFIG, STORE_LOCATION } from "@/data/site";
 
 export function StoreLocation() {
-  const hasMap = Boolean(STORE_LOCATION.address && STORE_LOCATION.mapsUrl && STORE_LOCATION.mapEmbedUrl);
+  const { mapEmbedUrl, mapsUrl } = STORE_LOCATION;
 
-  return <section className="location-section pointer-reactive" aria-labelledby="location-title">
-    <div className="location-shell">
-      <div className="location-rule" data-line />
-      <div className="location-info" data-reveal="left">
-        <span>05 / Location</span>
-        <h2 id="location-title">Encuéntranos<br /><em>en la calle.</em></h2>
-        <h3>{STORE_LOCATION.name}</h3>
-        <p><MapPin /> <span>{STORE_LOCATION.address || "Ubicación de tienda"}<br />{STORE_LOCATION.district ? `${STORE_LOCATION.district} · ` : ""}{STORE_LOCATION.city} · {SITE_CONFIG.country}</span></p>
-        <p><Clock3 /> <span>{STORE_LOCATION.schedule}</span></p>
-        <div className="location-actions">
-          {hasMap ? <a href={STORE_LOCATION.mapsUrl} target="_blank" rel="noreferrer">Cómo llegar <ArrowUpRight /></a> : <span className="location-action-disabled">Cómo llegar · pendiente</span>}
-          <a href={`https://wa.me/${SITE_CONFIG.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp <MessageCircle /></a>
+  return <section id="tienda" className="bd-location" aria-labelledby="location-title">
+    <Image className="bd-location-background" src="/boxy/location-background-v2.png" alt="" fill sizes="100vw" />
+    <div className="bd-location-overlay" />
+    <div className="bd-location-grain" aria-hidden="true" />
+    <div className="bd-location-shell">
+      <div className="bd-location-brandline" aria-hidden="true"><Crown /><span>Boxy Drip</span><i /><small>Streetwear&nbsp;&nbsp;//&nbsp;&nbsp;Ica, Perú</small></div>
+      <div className="bd-location-info" data-reveal="left">
+        <span className="bd-section-kicker"><i />Tienda física</span>
+        <h2 id="location-title">Visita<br /><em>Boxy Drip</em></h2>
+        <p className="bd-location-lead">Ven a conocer Boxy Drip en persona. Descubre nuevos drops, pruébate tus piezas favoritas y vive la esencia streetwear de la marca en Ica.</p>
+        <div className="bd-location-details">
+          <div><MapPin /><span><small>Ubicación</small><strong>{STORE_LOCATION.city}, {SITE_CONFIG.country}</strong></span></div>
+          <div><Headphones /><span><small>Atención y coordinación</small><strong>Por WhatsApp</strong></span></div>
+          <div className="bd-location-phone"><MessageCircle /><span><small>Consultas y pedidos</small><strong>986 176 298</strong></span></div>
         </div>
+        <div className="bd-location-actions">
+          <a className="bd-button bd-button-primary" href={`https://wa.me/${SITE_CONFIG.whatsapp}`} target="_blank" rel="noreferrer"><MessageCircle /> WhatsApp <ArrowRight /></a>
+          <a className="bd-button bd-button-secondary" href={mapsUrl} target="_blank" rel="noreferrer"><Navigation /> Cómo llegar <ArrowRight /></a>
+        </div>
+        <p className="bd-location-signoff">Más que ropa <i /> una comunidad real</p>
       </div>
-      <div className="location-map" data-reveal="right" data-native-cursor>
-        {hasMap ? <iframe title="Ubicación de Boxy Drip" src={STORE_LOCATION.mapEmbedUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div className="location-map-pending"><span className="map-grid" /><MapPin /><strong>Boxy Drip</strong><p>Ica · Perú</p><small>El mapa se activará al configurar la dirección oficial.</small></div>}
+      <div className="bd-location-map" data-reveal="right" data-native-cursor>
+        <iframe title="Ubicación exacta de Boxy Drip en Ica, Perú" src={mapEmbedUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
       </div>
+      <div className="bd-location-coordinates" aria-hidden="true"><span>-14.0171901° S · -75.7569767° W</span><i /><span>Ica, Perú</span></div>
     </div>
   </section>;
 }

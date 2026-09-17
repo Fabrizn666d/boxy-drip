@@ -1,3 +1,5 @@
+import { products } from "@/data/products";
+
 export const SITE_CONFIG = {
   brand: "Boxy Drip",
   claim: "Lo mejor de la calle",
@@ -11,9 +13,10 @@ export const SITE_CONFIG = {
     address: "",
     district: "",
     city: "Ica",
-    mapsUrl: "",
-    mapEmbedUrl: "",
-    schedule: "Horario por confirmar",
+    mapsUrl: "https://www.google.com/maps?q=-14.0171901,-75.7569767&z=17&hl=es",
+    mapEmbedUrl: "https://www.google.com/maps?q=-14.0171901,-75.7569767&z=17&hl=es&output=embed",
+    latitude: -14.0171901,
+    longitude: -75.7569767,
   },
 } as const;
 
@@ -31,12 +34,12 @@ export const SIZE_GUIDE = {
 };
 
 export const drops = [
-  { id: "drop-006", name: "Drop 006", date: "Agosto 2026", status: "Activo", campaign: "/campaign-artwork/short-drip-fire-campaign.png", productIds: ["BD-006-01", "BD-006-02", "BD-006-03", "BD-006-04"] },
+  { id: "drop-006", name: "Drop 006", date: "Agosto 2026", status: "Activo", campaign: "/campaign-artwork/short-drip-fire-campaign.png", productIds: ["BD-006-01", "BD-006-02", "BD-006-03", "BD-006-05"] },
 ] as const;
 
 export const categories = [
-  { name: "Polos", count: 4, href: "/catalogo?categoria=Polos", image: "/product-cutouts/polo-emotion-black.png" },
-  { name: "Buzos", count: 0, href: "/catalogo?categoria=Buzos", image: "/campaign-artwork/brand-triptych.png" },
-  { name: "Shorts", count: 0, href: "/catalogo?categoria=Shorts", image: "/campaign-artwork/short-drip-fire-campaign.png" },
-  { name: "Accesorios", count: 0, href: "/catalogo?categoria=Accesorios", image: "/mascot/alien-mascot.png" },
+  { name: "Polos", count: products.filter((product) => product.category === "Polos").length, href: "/#productos", image: "/product-cutouts/polo-emotion-black.png" },
+  { name: "Buzos", count: 0, href: "/#productos", image: "/campaign-artwork/brand-triptych.png" },
+  { name: "Shorts", count: products.filter((product) => product.category === "Shorts").length, href: "/#productos", image: "/campaign-artwork/short-drip-fire-campaign.png" },
+  { name: "Accesorios", count: 0, href: "/#productos", image: "/mascot/alien-mascot.png" },
 ] as const;

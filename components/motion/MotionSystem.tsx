@@ -4,9 +4,11 @@ import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 export function MotionSystem() {
   const progressRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const root = document.documentElement;
@@ -39,7 +41,7 @@ export function MotionSystem() {
     }
 
     gsap.registerPlugin(ScrollTrigger);
-    const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+    const lenis = new Lenis({ duration: 1.1, smoothWheel: true, prevent: (node) => Boolean(node.closest("[role='dialog']")) });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -71,7 +73,7 @@ export function MotionSystem() {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
       root.classList.remove("motion-ready");
     };
-  }, []);
+  }, [pathname]);
 
   return <div className="scroll-progress" ref={progressRef} aria-hidden="true" />;
 }

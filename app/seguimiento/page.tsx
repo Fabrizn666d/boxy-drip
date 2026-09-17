@@ -1,2 +1,4 @@
 import { PolicyPage } from "@/components/ui/PolicyPage";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Seguimiento | Boxy Drip", description: "Consulta el estado de tu pedido Boxy Drip por WhatsApp." };
 export default function Page(){return <PolicyPage eyebrow="Ayuda / Pedido" title="Seguimiento" intro="Tu drop, siempre ubicado." sections={[{title:"Estado del pedido",body:"En esta beta, el estado de cada pedido se consulta directamente por el WhatsApp oficial de Boxy Drip."},{title:"Qué necesitamos",body:"Envíanos el nombre con el que realizaste el pedido y una captura o referencia de la conversación de compra para ayudarte más rápido."}]}/>}

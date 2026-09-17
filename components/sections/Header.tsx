@@ -1,28 +1,27 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { ArrowUpRight, Menu, MessageCircle, Search, ShoppingBag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useStore } from "@/components/providers/StoreProvider";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { SearchOverlay } from "@/components/ui/SearchOverlay";
+import { useDialog } from "@/components/ui/useDialog";
 
 const navigation = [
-  { label: "Inicio", href: "/" },
-  { label: "Catálogo", href: "/catalogo" },
-  { label: "Nuevos", href: "/nuevos" },
-  { label: "Drops", href: "/drops" },
-  { label: "Nosotros", href: "/nosotros" },
+  { label: "Inicio", href: "#inicio", id: "inicio" },
+  { label: "Productos", href: "#productos", id: "productos" },
+  { label: "Tienda", href: "#tienda", id: "tienda" },
+  { label: "Contacto", href: "#footer", id: "footer" },
 ];
 
 export function Header() {
-  const pathname = usePathname();
   const { cartCount, openCart } = useStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("inicio");
+  const menuRef = useDialog(menuOpen, () => setMenuOpen(false));
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -31,51 +30,47 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    if (!menuOpen && !searchOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setMenuOpen(false);
-        setSearchOpen(false);
-      }
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen, searchOpen]);
+    const sections = navigation.map((item) => document.getElementById(item.id)).filter((section): section is HTMLElement => Boolean(section));
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target.id) setActiveSection(visible.target.id);
+    }, { rootMargin: "-20% 0px -58%", threshold: [0, 0.2, 0.6] });
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
       <motion.header
         className={`main-header ${scrolled ? "is-scrolled" : ""}`}
+        initial={{ opacity: 0, y: -18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: .72, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="header-inner">
-          <Link href="/" className="header-logo" aria-label="Boxy Drip, inicio">
-            <BrandMark priority />
-          </Link>
+          <a href="#inicio" className="header-logo" aria-label="Boxy Drip, inicio">
+            <BrandMark priority variant="alien" />
+          </a>
 
           <nav className="header-nav" aria-label="Navegación principal">
             {navigation.map((item) => (
-              <Link className={pathname === item.href ? "is-current" : ""} href={item.href} key={item.label}>
+              <a className={activeSection === item.id ? "is-current" : ""} href={item.href} key={item.label}>
                 {item.label}
-                {pathname === item.href ? <motion.span className="nav-active-line" layoutId="nav-active" transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} /> : null}
-              </Link>
+                {activeSection === item.id ? <motion.span className="nav-active-line" layoutId="nav-active" transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} /> : null}
+              </a>
             ))}
           </nav>
 
           <div className="header-tools">
-            <button type="button" aria-label="Buscar" onClick={() => setSearchOpen(true)}><Search /></button>
-            <Link href="/cuenta" aria-label="Mi cuenta" className="header-account"><UserRound /></Link>
-            <button type="button" aria-label={`Abrir carrito, ${cartCount} productos`} className="bag-button" onClick={openCart}>
+            <button type="button" aria-label="Buscar" onClick={() => { setMenuOpen(false); setSearchOpen(true); }}><Search /></button>
+            <button type="button" aria-label={`Abrir carrito, ${cartCount} productos`} className="bag-button" onClick={() => { setMenuOpen(false); openCart(); }}>
               <ShoppingBag />
               <span>{cartCount}</span>
             </button>
+            <a className="header-whatsapp" href="https://wa.me/51986176298" target="_blank" rel="noreferrer" aria-label="WhatsApp 986 176 298">
+              <MessageCircle />
+              <span>986 176 298</span>
+            </a>
             <button
               type="button"
               aria-expanded={menuOpen}
@@ -91,7 +86,7 @@ export function Header() {
 
         <AnimatePresence>
           {menuOpen ? (
-            <div className="mobile-menu-layer">
+            <div ref={menuRef} tabIndex={-1} className="mobile-menu-layer" role="dialog" aria-modal="true" aria-label="Menú de navegación">
               <motion.button
                 type="button"
                 className="mobile-menu-backdrop"
@@ -112,9 +107,9 @@ export function Header() {
               >
                 <span className="mobile-menu-label">Menú / Boxy Drip</span>
                 {navigation.map((item, index) => (
-                  <Link href={item.href} key={item.label} onClick={() => setMenuOpen(false)}>
+                  <a href={item.href} key={item.label} onClick={() => setMenuOpen(false)}>
                     <small>0{index + 1}</small><strong>{item.label}</strong><ArrowUpRight />
-                  </Link>
+                  </a>
                 ))}
               </motion.nav>
             </div>
