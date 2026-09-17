@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Check, ChevronLeft, ChevronRight, MessageCircle, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useStore } from "@/components/providers/StoreProvider";
 import { useDialog } from "@/components/ui/useDialog";
 import { PRODUCT_PRICE_LABEL, type Product } from "@/data/products";
@@ -20,6 +20,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
   const [imageIndex, setImageIndex] = useState(0);
   const [size, setSize] = useState(() => product.colors[0].sizes.find((item) => item.status !== "sold-out")?.name ?? "");
   const [quantity, setQuantity] = useState(1);
+  const swipeStart = useRef<number | null>(null);
   const dialogRef = useDialog(true, onClose);
   const color = product.colors.find((item) => item.id === colorId) ?? product.colors[0];
 
@@ -75,7 +76,12 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         <button type="button" className="product-modal-close" aria-label="Cerrar detalle del producto" onClick={onClose}><X /></button>
 
         <div className="product-modal-gallery">
-          <div className="product-modal-image">
+          <div className="product-modal-image" onPointerDown={(event) => { swipeStart.current = event.clientX; }} onPointerCancel={() => { swipeStart.current = null; }} onPointerUp={(event) => {
+            if (swipeStart.current === null) return;
+            const distance = event.clientX - swipeStart.current;
+            if (Math.abs(distance) > 45) changeImage(distance > 0 ? -1 : 1);
+            swipeStart.current = null;
+          }}>
             <Image src={color.images[imageIndex]} alt={`${product.name}, ${color.name}`} fill sizes="(max-width: 760px) 92vw, 52vw" />
             {color.images.length > 1 ? (
               <div className="product-modal-arrows">
@@ -96,6 +102,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         </div>
 
         <div className="product-modal-info">
+          <nav className="product-modal-breadcrumb" aria-label="Ruta del producto"><button type="button" onClick={onClose}>Catálogo</button><span>/</span><span>{product.category}</span></nav>
           <div className="product-modal-meta"><span>{product.badge ?? "Boxy Drip"}</span><small>{product.drop} · {product.category}</small></div>
           <h2 id="product-modal-title">{product.name}</h2>
           <p className="product-modal-description">{product.description}</p>

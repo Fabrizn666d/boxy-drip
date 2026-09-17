@@ -73,7 +73,63 @@ const inspect = async (label) => {
   state.links.forEach((href) => links.add(href.split("#")[0]));
   checks.push({ label, title: state.title, width: state.width, overflow: state.scrollWidth > state.width, unloadedImages: state.images.length, whatsappNumberCorrect: state.whatsapp.every((href) => new URL(href).pathname === "/51986176298") });
 };
-if (process.argv.includes("--footer")) {
+if (process.argv.includes("--responsive")) {
+  const sizes=[[360,800],[375,812],[390,844],[393,873],[412,915],[430,932],[768,1024],[1024,768],[1280,800],[1440,900],[1920,1080]];
+  const captureSection=async(selector,name)=>{
+    await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'start',behavior:'instant'})`); await delay(900);
+    const clip=await evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:0,y:r.top+scrollY,width:innerWidth,height:r.height,scale:1}})()`);
+    await evaluate(`document.querySelector('.main-header').style.visibility='hidden';document.querySelector('.whatsapp-float')?.style.setProperty('visibility','hidden')`);
+    const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip});
+    await writeFile(`.visual-check/${name}.png`,Buffer.from(shot.data,'base64'));
+    await evaluate(`document.querySelector('.main-header').style.removeProperty('visibility');document.querySelector('.whatsapp-float')?.style.removeProperty('visibility')`);
+  };
+  for(const [width,height] of sizes){
+    await call('Emulation.setTouchEmulationEnabled',{enabled:width<=768,maxTouchPoints:1});
+    await navigate('/',width,height);
+    const state=await evaluate(`(()=>{
+      const rect=s=>document.querySelector(s).getBoundingClientRect();const art=rect('.bd-hero-art img');const img=document.querySelector('.bd-hero-art img');const scale=Math.min(art.width/img.naturalWidth,art.height/img.naturalHeight);const artHeight=img.naturalHeight*scale;const artWidth=img.naturalWidth*scale;const top=art.bottom-artHeight;
+      const benefits=rect('.bd-hero-benefits');const actions=rect('.bd-hero-actions');
+      const offenders=[...document.querySelectorAll('main *,#footer *,.main-header')].filter(el=>{
+        const r=el.getBoundingClientRect();if(!el.checkVisibility()||r.width===0||r.left>=-1&&r.right<=innerWidth+1)return false;
+        let parent=el.parentElement;while(parent&&parent!==document.body){const o=getComputedStyle(parent).overflowX;if(['hidden','clip','auto','scroll'].includes(o))return false;parent=parent.parentElement;}return true;
+      }).map(el=>({tag:el.tagName,class:el.className,left:Math.round(el.getBoundingClientRect().left),right:Math.round(el.getBoundingClientRect().right)}));
+      return {title:document.title,width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,bodyOverflow:getComputedStyle(document.body).overflowX,offenders,assets:[...document.querySelectorAll('.bd-hero img')].map(img=>({src:img.getAttribute('src'),complete:img.complete&&img.naturalWidth>0,fit:getComputedStyle(img).objectFit})),heroHeight:rect('.bd-hero').height,foregroundTop:top,buttonsBottom:actions.bottom,foregroundBottom:art.bottom,benefitsTop:benefits.top,foregroundWidth:artWidth,productsDisplay:getComputedStyle(document.querySelector('.bd-products-grid')).display,cardWidth:rect('.drop-card').width,trustColumns:getComputedStyle(document.querySelector('.trust-inner')).gridTemplateColumns,footerColumns:getComputedStyle(document.querySelector('.footer-inner')).gridTemplateColumns,footerClosed:[...document.querySelectorAll('.footer-link-group details')].every(d=>!d.open)};
+    })()`);
+    if(state.overflow||state.offenders.length||state.assets.some(a=>!a.complete))throw Error(`Responsive layout failed ${width}: ${JSON.stringify(state)}`);
+    if(width<=760&&(state.productsDisplay!=='flex'||state.cardWidth>321||state.foregroundTop<state.buttonsBottom-3||state.foregroundBottom>state.benefitsTop+3||!state.footerClosed||state.trustColumns.split(' ').length!==2))throw Error(`Mobile composition failed ${width}: ${JSON.stringify(state)}`);
+    if(width===768&&(state.productsDisplay!=='grid'||state.footerColumns.split(' ').length!==2))throw Error(`Tablet composition failed: ${JSON.stringify(state)}`);
+    await screenshot(`responsive-hero-${width}`);
+    for(const [selector,name] of [['#inicio','hero-full'],['#productos','products'],['#tienda','location'],['#footer','footer']])await captureSection(selector,`responsive-${name}-${width}`);
+    if(width<=760){
+      await evaluate(`document.querySelector('.footer-link-group summary').click()`);await delay(200);
+      if(!(await evaluate(`document.querySelector('.footer-link-group details').open&&document.querySelector('.footer-link-group a').checkVisibility()`)))throw Error('Footer accordion failed');
+      await evaluate(`document.querySelector('.menu-button').click()`);await delay(400);
+      if(!(await evaluate(`document.querySelectorAll('.mobile-navigation>a').length===6&&document.querySelector('.mobile-menu-whatsapp').href.includes('51986176298')&&document.querySelector('.mobile-navigation').getBoundingClientRect().right<=innerWidth`)))throw Error('Mobile menu failed');
+      await screenshot(`responsive-menu-${width}`);
+      await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await waitFor(`!document.querySelector('.mobile-menu-layer')&&document.body.style.overflow!=='hidden'`,'Menu close failed');
+    }
+    await evaluate(`document.querySelectorAll('.product-card-open')[1].click()`);await delay(450);
+    const modal=await evaluate(`(()=>{const el=document.querySelector('.product-modal');const r=el.getBoundingClientRect();return {left:r.left,right:r.right,viewport:innerWidth,price:el.querySelector('.product-modal-price').textContent,cta:el.querySelector('.product-modal-add').getBoundingClientRect().width,info:el.querySelector('.product-modal-info').getBoundingClientRect().width}})()`);
+    if(modal.left<0||modal.right>width+1||modal.price!=='Precio al privado'||width<=760&&modal.cta<modal.info-55)throw Error(`Modal responsive failed: ${JSON.stringify(modal)}`);
+    await screenshot(`responsive-modal-${width}`);
+    if(width<=760){
+      const previous=await evaluate(`document.querySelector('.product-modal-image img').src`);
+      await evaluate(`(()=>{const el=document.querySelector('.product-modal-image');el.dispatchEvent(new PointerEvent('pointerdown',{clientX:250,bubbles:true}));el.dispatchEvent(new PointerEvent('pointerup',{clientX:120,bubbles:true}));})()`);await delay(150);
+      if(await evaluate(`document.querySelector('.product-modal-image img').src`)===previous)throw Error('Gallery swipe failed');
+      await evaluate(`document.querySelector('.product-modal').scrollTop=document.querySelector('.product-modal').scrollHeight`);await screenshot(`responsive-modal-cta-${width}`);
+    }
+    await evaluate(`document.querySelector('.product-modal-add').click()`);await delay(550);
+    const cart=await evaluate(`(()=>{const el=document.querySelector('.cart-drawer');const r=el.getBoundingClientRect();return {left:r.left,right:r.right,viewport:innerWidth,wa:el.querySelector('.drawer-footer>a').href,overflow:el.scrollWidth>el.clientWidth}})()`);
+    if(cart.left<0||cart.right>width+1||cart.overflow||!cart.wa.includes('51986176298')||decodeURIComponent(cart.wa).includes('S/'))throw Error(`Cart failed ${width}: ${JSON.stringify(cart)}`);
+    await screenshot(`responsive-cart-${width}`);
+    await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await waitFor(`!document.querySelector('.cart-layer')&&document.body.style.overflow!=='hidden'`,'Cart close failed');
+    checks.push({label:`responsive-${width}x${height}`,...state,modal,cart});console.log(`Responsive ${width}x${height}: checked`);
+  }
+  await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+  await navigate('/',390,844);await screenshot('responsive-reduced-motion-390');
+  if(!(await evaluate(`getComputedStyle(document.querySelector('.bd-hero-art')).opacity==='1'&&getComputedStyle(document.querySelector('.bd-hero-art-parallax')).transform==='none'`)))throw Error('Reduced motion failed');
+  await call('Emulation.setEmulatedMedia',{features:[]});
+} else if (process.argv.includes("--footer")) {
   for (const width of [1920, 1440, 1200, 1024, 768, 430, 390, 360]) {
     await navigate("/", width, width < 768 ? 844 : 1000);
     await evaluate(`document.querySelector('#footer').scrollIntoView({block:'start',behavior:'instant'})`);

@@ -14,7 +14,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
   const quickSize = color.sizes.find((size) => size.status !== "sold-out")?.name;
 
   return (
-    <article className="drop-card" data-reveal-item onPointerMove={(event) => { const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--card-x", `${event.clientX - rect.left}px`); event.currentTarget.style.setProperty("--card-y", `${event.clientY - rect.top}px`); }}>
+    <article className="drop-card" data-reveal-item onPointerMove={(event) => { if (event.pointerType === "touch" || window.matchMedia("(prefers-reduced-motion: reduce), (hover: none)").matches) return; const rect = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--card-x", `${event.clientX - rect.left}px`); event.currentTarget.style.setProperty("--card-y", `${event.clientY - rect.top}px`); }}>
       <button type="button" className="drop-card-link product-card-open" aria-label={`Ver detalles de ${product.name}`} onClick={() => openProduct(product)}>
         <div className="drop-card-media">
           {product.badge ? <span className="drop-badge">{product.badge}</span> : null}

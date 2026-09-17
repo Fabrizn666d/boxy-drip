@@ -14,6 +14,13 @@ const navigation = [
   { label: "Tienda", href: "#tienda", id: "tienda" },
   { label: "Contacto", href: "#footer", id: "footer" },
 ];
+const mobileNavigation = [
+  { label: "Inicio", href: "#inicio" },
+  { label: "Catálogo", href: "#productos" },
+  { label: "Nuevos", href: "#productos" },
+  { label: "Drops", href: "#productos" },
+  { label: "Nosotros", href: "#inicio" },
+];
 
 export function Header() {
   const { cartCount, openCart } = useStore();
@@ -106,11 +113,12 @@ export function Header() {
                 aria-label="Navegación móvil"
               >
                 <span className="mobile-menu-label">Menú / Boxy Drip</span>
-                {navigation.map((item, index) => (
+                {mobileNavigation.map((item, index) => (
                   <a href={item.href} key={item.label} onClick={() => setMenuOpen(false)}>
                     <small>0{index + 1}</small><strong>{item.label}</strong><ArrowUpRight />
                   </a>
                 ))}
+                <a className="mobile-menu-whatsapp" href="https://wa.me/51986176298" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}><MessageCircle /><span>WhatsApp<strong>986 176 298</strong></span><ArrowUpRight /></a>
               </motion.nav>
             </div>
           ) : null}

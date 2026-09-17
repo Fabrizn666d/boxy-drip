@@ -7,6 +7,7 @@ import { WhatsAppFloat } from "@/components/ui/WhatsAppFloat";
 import { AcidCursor } from "@/components/motion/AcidCursor";
 import { MotionSystem } from "@/components/motion/MotionSystem";
 import "./globals.css";
+import "./responsive.css";
 
 const displayFont = Barlow_Condensed({
   subsets: ["latin"],

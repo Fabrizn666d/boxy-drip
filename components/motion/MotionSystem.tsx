@@ -13,6 +13,7 @@ export function MotionSystem() {
   useEffect(() => {
     const root = document.documentElement;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const touch = window.matchMedia("(pointer: coarse), (hover: none)").matches;
     root.classList.add("motion-ready");
 
     const updateProgress = () => {
@@ -22,6 +23,7 @@ export function MotionSystem() {
     };
     window.addEventListener("scroll", updateProgress, { passive: true });
     const updatePointerLight = (event: PointerEvent) => {
+      if (touch || event.pointerType === "touch") return;
       const target = event.target instanceof Element ? event.target.closest<HTMLElement>(".pointer-reactive") : null;
       if (!target) return;
       const rect = target.getBoundingClientRect();
@@ -41,7 +43,7 @@ export function MotionSystem() {
     }
 
     gsap.registerPlugin(ScrollTrigger);
-    const lenis = new Lenis({ duration: 1.1, smoothWheel: true, prevent: (node) => Boolean(node.closest("[role='dialog']")) });
+    const lenis = new Lenis({ duration: touch ? .65 : 1.1, smoothWheel: !touch, prevent: (node) => Boolean(node.closest("[role='dialog']")) });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -50,7 +52,7 @@ export function MotionSystem() {
     const context = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
         const direction = element.dataset.reveal;
-        const x = direction === "left" ? -40 : direction === "right" ? 40 : 0;
+        const x = touch ? 0 : direction === "left" ? -40 : direction === "right" ? 40 : 0;
         gsap.fromTo(element, { autoAlpha: 0, x, y: x ? 0 : 42 }, { autoAlpha: 1, x: 0, y: 0, duration: .8, ease: "power3.out", scrollTrigger: { trigger: element, start: "top 82%", end: "top 58%", once: true } });
       });
       gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((group) => {
@@ -58,7 +60,7 @@ export function MotionSystem() {
         gsap.fromTo(items, { autoAlpha: 0, y: 50, scale: .98 }, { autoAlpha: 1, y: 0, scale: 1, duration: .72, stagger: .09, ease: "power3.out", scrollTrigger: { trigger: group, start: "top 82%", once: true } });
       });
       gsap.utils.toArray<HTMLElement>("[data-line]").forEach((line) => gsap.fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: .9, ease: "power3.out", transformOrigin: "left", scrollTrigger: { trigger: line, start: "top 86%", once: true } }));
-      gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((element) => {
+      if (!touch) gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((element) => {
         const amount = Number(element.dataset.parallax || 50);
         gsap.to(element, { y: amount, ease: "none", scrollTrigger: { trigger: ".home-hero", start: "top top", end: "bottom top", scrub: 1 } });
       });

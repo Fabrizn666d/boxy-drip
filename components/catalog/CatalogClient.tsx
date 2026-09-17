@@ -54,7 +54,7 @@ export function CatalogClient({ initialCategory = "Todos", initialQuery = "" }: 
     <div className="catalog-controls">
       <div className="catalog-control-row">
         <label className="catalog-search"><Search /><span className="sr-only">Buscar en el catálogo</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre, color o colección" /></label>
-        <button className="catalog-mobile-filter" type="button" onClick={() => setFiltersOpen(true)}><SlidersHorizontal /> Filtros</button>
+        <button className="catalog-mobile-filter" type="button" onClick={() => setFiltersOpen(true)}><SlidersHorizontal /> Filtrar</button>
         <label className="catalog-sort"><span>Ordenar</span><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="new">Más nuevos</option><option value="featured">Destacados</option></select></label>
       </div>
       <div className="catalog-desktop-filters"><FilterPanel {...panelProps} /></div>
